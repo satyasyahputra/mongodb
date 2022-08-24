@@ -2,12 +2,10 @@ defmodule Mongo.App do
   @moduledoc false
 
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
     children = [
-      worker(Mongo.IdServer, []),
-      worker(Mongo.PBKDF2Cache, []),
-      worker(:gen_event, [local: Mongo.Events])
+      %{id: Mongo.IdServer, start: {Mongo.IdServer, :start_link, []}, type: :worker},
+      %{id: Mongo.PBKDF2Cache, start: {Mongo.PBKDF2Cache, :start_link, []}, type: :worker},
+      %{id: :gen_event, start: {:gen_event, :start_link, [local: Mongo.Events]}, type: :worker}
     ]
 
     opts = [strategy: :one_for_one, name: Mongo.Supervisor]

@@ -138,7 +138,7 @@ defmodule Mongo do
   end
 
   def child_spec(opts, child_opts \\ []) do
-    Supervisor.Spec.worker(Mongo, [opts], child_opts)
+    %{id: Mongo, start: {Mongo, :start_link, [opts]}, type: :worker}
   end
 
   @doc """

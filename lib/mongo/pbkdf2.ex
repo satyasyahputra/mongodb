@@ -36,17 +36,25 @@ defmodule Mongo.PBKDF2 do
   end
 
   defp generate(_fun, _salt, _iterations, max_length, _block_index, acc, length)
-      when length >= max_length do
-    key = acc |> Enum.reverse |> IO.iodata_to_binary
+       when length >= max_length do
+    key = acc |> Enum.reverse() |> IO.iodata_to_binary()
     <<bin::binary-size(max_length), _::binary>> = key
     bin
   end
 
   defp generate(fun, salt, iterations, max_length, block_index, acc, length) do
     initial = fun.(<<salt::binary, block_index::integer-size(32)>>)
-    block   = iterate(fun, iterations - 1, initial, initial)
-    generate(fun, salt, iterations, max_length, block_index + 1,
-             [block | acc], byte_size(block) + length)
+    block = iterate(fun, iterations - 1, initial, initial)
+
+    generate(
+      fun,
+      salt,
+      iterations,
+      max_length,
+      block_index + 1,
+      [block | acc],
+      byte_size(block) + length
+    )
   end
 
   defp iterate(_fun, 0, _prev, acc), do: acc
@@ -57,6 +65,6 @@ defmodule Mongo.PBKDF2 do
   end
 
   defp mac_fun(digest, secret) do
-    &:crypto.hmac(digest, secret, &1)
+    &:crypto.mac(:hmac, digest, secret, &1)
   end
 end
